@@ -8,41 +8,36 @@ class Solver
 
   def initialize(puzzle_text)
     @puzzle_text = puzzle_text
-
   end
-
 
   def split_data
     @puzzle_text.split("\n").map(&:chars).flatten
   end
 
+  def shovel_squares(squares, first, second, third)
+    3.times do
+      squares << [first[0], first[0], first[0]]
+      squares << [second[0], second[0], second[0]]
+      squares << [third[0], third[0], third[0]]
+    end
+  end
 
-  def squares
+  def square_assignments
     first = ["z","w","t"]
     second = ["y","v","s"]
     third = ["x","u","r"]
-
     squares = []
     3.times do
-
-
-    3.times do
-      squares << [first[0], first[0], first[0]];
-      squares << [second[0], second[0], second[0]];
-      squares << [third[0], third[0], third[0]];
-    end
-
-    first.rotate!
-    second.rotate!
-    third.rotate!
+      shovel_squares(squares, first, second, third)
+      first.rotate!; second.rotate!; third.rotate!
     end
     squares.flatten
   end
 
 
-  def make_board
+  def board
     letters = ("a".."i").to_a
-    row = ["x", "x", "x", "x", "x", "x", "x", "x", "x"]
+    row = ["x"] * 9
     letters_to_sub = letters.zip(row).map(&:join)
     positions = []
     9.times do |time|
@@ -50,15 +45,15 @@ class Solver
         pair.gsub('x', (time+1).to_s)
       end
     end
-    final_positions = positions.flatten.zip(squares).map(&:join)
+    final_positions = positions.flatten.zip(squares).map(&:join).map {|x| x = Cell.new}
     final_positions.flatten.zip(split_data).to_h
   end
 
 
-  def output_data
-    @puzzle_text
-    LETTERMAP
-  end
+  # def output_data
+  #   @puzzle_text
+  #   LETTERMAP
+  # end
 
   # parse into row, column, square
 
@@ -70,6 +65,16 @@ class Solver
   # check to see if there is an easy solution
   # if not move on to check next open spot
 
+  #For peers: Does each cell need to belong to a cell class?
+
+
+end
+
+class Cell
+
+  def peers
+
+  end
 
 end
 
