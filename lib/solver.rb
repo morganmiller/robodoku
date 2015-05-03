@@ -1,13 +1,12 @@
 require 'pry'
 
-
 class Solver
 
   attr_reader :board
 
   def initialize(puzzle_text)
     @puzzle_text = puzzle_text
-    @board = {}
+    @board = make_board
   end
 
   def split_data
@@ -69,39 +68,64 @@ class Solver
   end
 
   def make_board
-    @board = final_designators.flatten.zip(split_data).to_h
+    final_designators.flatten.zip(split_data).to_h
   end
 
-  def all_numbers
+  def possible_numbers
     (1..9).to_a
   end
 
-  def find_peers_and_sub
-    #needs to check for keys with matching values
-    #find all of their values
-    count = 0
-    until count == 81
-      @board.each do |key, val|
-        require 'pry'
-        binding.pry
-        if @board[key] != 0
-          count += 1
-        else
-          peers = []
-          @board.each do |other_key, other_val|
-            peers << other_val if other_key.chars.any? {|spot| key.include?(spot) }
-          end
-          peers.delete_if {|num| num == 0}
-          if peers.uniq.length == 8
-            peers.uniq.sort.each_with_index do |num, index|
-              @board[key] = all_numbers[index] if num != all_numbers[index]
-            end
-          end
-          count += 1
-        end
-      end
+  def compare_numbers(cell)
+    possible_numbers.delete_if{ |num| peers(cell).include?(num) }
+  end
+
+  def peers(cell)
+    peers = []
+    @board.each do |other_key, other_val|
+      peers << other_val if other_key.chars.any? {|spot| cell.include?(spot) }
+    end
+    peers.delete_if {|num| num == 0}.uniq
+  end
+
+  def empty_cells
+    @board.keys.inject([]) do |empty_cells, cell|
+      empty_cells << cell if @board[cell] == 0 || @board[cell].nil?; empty_cells
     end
   end
+
+  def cell_to_solve
+    empty_cells.sort_by { |cell| peers(cell).length }.last
+  end
+
+  def solved?
+    !@board.values.include?(0)
+  end
+
+  def solve
+    until solved?
+      @board[cell_to_solve] = compare_numbers(cell_to_solve)
+      puts "i'm solving!"
+    end
+  end
+
+  # def find_peers_and_sub
+  #   count = 0
+  #   until count == 81
+  #     @board.each do |key, val|
+  #       if @board[key] != 0
+  #         count += 1
+  #       else
+  #         if peers(key).length == 8
+  #           peers(key).sort.each_with_index do |num, index|
+  #             @board[key] = possible_numbers[index] if num != possible_numbers[index]
+  #           end
+  #         end
+  #         count += 1
+  #       end
+  #     end
+  #   end
+  # end
+
 
 
 
@@ -111,7 +135,7 @@ class Solver
   # coordinate system with a hash.... A1, A2, A3... to map a @board
 
   # know the value of a spot and/or if a spot is blank or not
-  # know where each spot is on the @board
+  # know where each spot is on the board
   # find all of a spot's peers...
   # check to see if there is an easy solution
   # if not move on to check next open spot

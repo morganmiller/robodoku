@@ -14,11 +14,6 @@ class SolverTest < Minitest::Test
     @solver = Solver.new(puzzle_text)
   end
 
-  def test_it_solves
-    skip
-    assert false, "make it solve!"
-  end
-
   def test_it_can_parse_the_puzzle_text
     assert_equal [0, 2, 6, 5, 9, 4, 3, 1, 7, 7, 1, 5, 6,
         3, 8, 9, 4, 2, 3, 9, 4, 7, 2, 1, 8, 6, 5, 1, 6, 3,
@@ -29,16 +24,18 @@ class SolverTest < Minitest::Test
   end
 
   def test_it_makes_a_board
-    assert_equal 0, solver.make_board["a1z"]
+    assert_equal 0, solver.board["a1z"]
     assert_equal 6, solver.board["c1z"]
     assert_equal 1, solver.board["i9r"]
   end
 
-  def test_it_can_find_peers_and_sub
-    skip
-    solver.find_peers_and_sub
-    assert_equal 8, solver.board["a1z"]
+  def test_it_can_solve_easy_puzzle
+    solver.solve
+    assert_equal 8, solver.board
   end
+
+
+
 
 
 
