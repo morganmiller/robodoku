@@ -71,20 +71,34 @@ class Solver
     final_designators.flatten.zip(split_data).to_h
   end
 
-  def possible_numbers
-    (1..9).to_a
-  end
-
-  def compare_numbers(cell)
-    possible_numbers.delete_if{ |num| peers(cell).include?(num) }
-  end
-
-  def peers(cell)
-    peers = []
-    @board.each do |other_key, other_val|
-      peers << other_val if other_key.chars.any? {|spot| cell.include?(spot) }
-    end
+  def unique_peers(peers)
     peers.delete_if {|num| num == 0}.uniq
+  end
+
+  def find_peer_cells(cell, num)
+    @board.keys.select { |other| cell[num] == other[num] unless other == cell }
+  end
+
+  def row_peers(cell)
+    find_peer_cells(cell, 1).map do |peer|
+      @board[peer]
+    end.delete_if {|num| num == 0}
+  end
+
+  def column_peers(cell)
+    find_peer_cells(cell, 0).map do |peer|
+      @board[peer]
+    end.delete_if {|num| num == 0}
+  end
+
+  def square_peers(cell)
+    find_peer_cells(cell, 2).map do |peer|
+      @board[peer]
+    end.delete_if {|num| num == 0}
+  end
+
+  def all_peers(cell)
+    unique_peers(column_peers(cell) + square_peers(cell) + row_peers(cell))
   end
 
   def empty_cells
@@ -94,7 +108,61 @@ class Solver
   end
 
   def cell_to_solve
-    empty_cells.sort_by { |cell| peers(cell).length }.last
+    empty_cells.sort_by { |cell| all_peers(cell).length }.last
+  end
+
+  def all_possible_numbers
+    (1..9).to_a
+  end
+
+  def compare_numbers(cell)
+    all_possible_numbers.delete_if{ |num| all_peers(cell).include?(num) }
+  end
+
+  def needed_numbers_for_group(designator)
+    all_values = []
+    @board.each do |cell, value|
+      if cell.include?(designator)
+        all_values << value
+      end
+    end
+    all_possible_numbers.delete_if {|num| all_values.include?(num)}
+  end
+
+  def all_empty_cells_for_group(designator)
+    all_cells = []
+    @board.each do |cell, _value|
+      if cell.include?(designator)
+        all_cells << cell
+      end
+    end
+    all_cells.select { |cell| empty_cells.include?(cell) }
+  end
+
+  def check_peers(designator)
+    needed = needed_numbers_for_group(designator)
+    needed.length.times do
+      count = 0
+      all_empty_cells_for_group(designator).each do |cell|
+        if all_peers(cell).include?(needed.last)
+          count +=1
+        end
+      end
+      if count == (all_empty_cells_for_group(designator).length - 1)
+        solved_cell = all_empty_cells_for_group(designator).detect do |cell|
+          !all_peers(cell).include?(needed.last)
+        end
+        @board[solved_cell] == needed.last
+      end
+      needed.pop
+    end
+  end
+
+  def check_them_all
+    rows.each {|row| check_peers(row)}
+    columns.each {|col| check_peers(col)}
+    squares.each {|sq| check_peers(sq)}
+
   end
 
   def solved?
@@ -103,54 +171,11 @@ class Solver
 
   def solve
     until solved?
-      @board[cell_to_solve] = compare_numbers(cell_to_solve)
-      puts "i'm solving!"
+      if all_peers(cell_to_solve).length == 8
+        @board[cell_to_solve] = compare_numbers(cell_to_solve)[0]
+      end
+      check_them_all
     end
   end
-
-  # def find_peers_and_sub
-  #   count = 0
-  #   until count == 81
-  #     @board.each do |key, val|
-  #       if @board[key] != 0
-  #         count += 1
-  #       else
-  #         if peers(key).length == 8
-  #           peers(key).sort.each_with_index do |num, index|
-  #             @board[key] = possible_numbers[index] if num != possible_numbers[index]
-  #           end
-  #         end
-  #         count += 1
-  #       end
-  #     end
-  #   end
-  # end
-
-
-
-
-
-  # parse into to_be_replaced_by_rows, column, square
-
-  # coordinate system with a hash.... A1, A2, A3... to map a @board
-
-  # know the value of a spot and/or if a spot is blank or not
-  # know where each spot is on the board
-  # find all of a spot's peers...
-  # check to see if there is an easy solution
-  # if not move on to check next open spot
-
-  #For peers: Does each cell need to belong to a cell class?
-
-
 end
-
-class Cell
-
-  def peers
-
-  end
-
-end
-
 
