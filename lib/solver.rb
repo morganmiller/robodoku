@@ -9,6 +9,7 @@ class Solver
     @board = make_board
   end
 
+  ###Parser is chopping off spaces if they are at the end of the line
   def split_data
     @puzzle_text.split("\n").map(&:chars).flatten.map(&:to_i)
   end
@@ -148,11 +149,13 @@ class Solver
           count +=1
         end
       end
+      # puts "count: #{count} \n comparator: #{all_empty_cells_for_group(designator).length-1}"
       if count == (all_empty_cells_for_group(designator).length - 1)
         solved_cell = all_empty_cells_for_group(designator).detect do |cell|
           !all_peers(cell).include?(needed.last)
         end
-        @board[solved_cell] == needed.last
+        puts solved_cell
+        @board[solved_cell] = needed.last
       end
       needed.pop
     end
@@ -170,12 +173,15 @@ class Solver
   end
 
   def solve
+    puts @board.values.select {|v| v==0}.length
+    puts @board
     until solved?
       if all_peers(cell_to_solve).length == 8
         @board[cell_to_solve] = compare_numbers(cell_to_solve)[0]
       end
       check_them_all
+      puts @board.values.select {|v| v==0}.length
+      # puts @board
     end
   end
 end
-
