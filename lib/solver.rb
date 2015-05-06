@@ -9,7 +9,6 @@ class Solver
     @board = make_board
   end
 
-  ###Parser is chopping off spaces if they are at the end of the line
   def split_data
     @puzzle_text.split("\n").map(&:chars).flatten.map(&:to_i)
   end
@@ -116,10 +115,12 @@ class Solver
     (1..9).to_a
   end
 
-  def compare_numbers(cell)
+  def possible_solutions(cell)
     all_possible_numbers.delete_if{ |num| all_peers(cell).include?(num) }
   end
 
+####Begin heuristic that solves by checking if there is only one possible solution
+  ###across all empty cells for peer group
   def needed_numbers_for_group(designator)
     all_values = []
     @board.each do |cell, value|
@@ -149,12 +150,10 @@ class Solver
           count +=1
         end
       end
-      # puts "count: #{count} \n comparator: #{all_empty_cells_for_group(designator).length-1}"
       if count == (all_empty_cells_for_group(designator).length - 1)
         solved_cell = all_empty_cells_for_group(designator).detect do |cell|
           !all_peers(cell).include?(needed.last)
         end
-        puts solved_cell
         @board[solved_cell] = needed.last
       end
       needed.pop
@@ -173,15 +172,23 @@ class Solver
   end
 
   def solve
-    puts @board.values.select {|v| v==0}.length
-    puts @board
     until solved?
-      if all_peers(cell_to_solve).length == 8
-        @board[cell_to_solve] = compare_numbers(cell_to_solve)[0]
+      if possible_solutions(cell_to_solve).length == 1
+        @board[cell_to_solve] = possible_solutions(cell_to_solve)[0]
       end
       check_them_all
-      puts @board.values.select {|v| v==0}.length
-      # puts @board
+    end
+    print_board
+  end
+  
+  def print_board
+    @board.values.each_slice(9) do |row|
+      p row.join(" ")
     end
   end
 end
+
+puzzle_text = File.read("./puzzles/solve_new.txt")
+solver = Solver.new(puzzle_text)
+
+solver.solve
