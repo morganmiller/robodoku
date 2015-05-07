@@ -93,18 +93,17 @@ class Solver
       end
     end
   end
-
-  ##Refactor repeats
+  
+  def find_singular_possibilities_for_group(group, group_peers)
+    group.each do |designator|
+      find_singular_possibilities(group_peers, designator)
+    end
+  end
+  
   def find_singular_possibilities_for_all
-    rows.each do |designator|
-      find_singular_possibilities(row_peers, designator)
-    end
-    columns.each do |designator|
-      find_singular_possibilities(column_peers, designator)
-    end
-    squares.each do |designator|
-      find_singular_possibilities(square_peers, designator)
-    end
+    find_singular_possibilities_for_group(rows, row_peers)
+    find_singular_possibilities_for_group(columns, column_peers)
+    find_singular_possibilities_for_group(squares, square_peers)
   end
 
   def puzzle_solved?
@@ -124,12 +123,9 @@ class Solver
   def print_board
     @board.map do |cell|
       cell.solution
+    end.each_slice(9) do |slice|
+      puts slice.join
     end
   end
 end
 
-
-##Add spec harness
-##Add rake tests
-##Add more tests, including for cell class
-##Check rubric

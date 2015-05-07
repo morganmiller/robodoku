@@ -40,6 +40,27 @@ class SolverTest < Minitest::Test
     assert_equal 9, solver.column_peers["h"].length
     assert_equal "i", solver.column_peers["i"].last.column
   end
+  
+  def test_it_finds_needed_numbers_for_peer_group_when_only_1_expect
+    puzzle_text = File.read("./puzzles/easy_sample.txt")
+    solver = Solver.new(puzzle_text)
+
+    assert_equal [8], solver.needed_numbers_for_peer_group(solver.column_peers, "a")
+  end
+
+  def test_it_finds_needed_numbers_for_group_when_some_expected
+    puzzle_text = File.read("./puzzles/solve_new.txt")
+    solver = Solver.new(puzzle_text)
+
+    assert_equal [8,6], solver.needed_numbers_for_peer_group(solver.column_peers, "a")
+  end
+
+  def test_it_finds_needed_numbers_for_group_when_many_expected
+    puzzle_text = File.read("./puzzles/easy_1.txt")
+    solver = Solver.new(puzzle_text)
+
+    assert_equal [4, 7, 3, 9, 5], solver.needed_numbers_for_peer_group(solver.column_peers, "a")
+  end
 
   def test_it_solves_puzzle_with_one_empty
     puzzle_text = File.read("./puzzles/easy_sample.txt")
