@@ -2,79 +2,79 @@ require "minitest"
 require "minitest/autorun"
 require 'minitest/pride'
 require "./lib/solver"
-# require "pride"
-# require "./lib/sudoku"
 
 class SolverTest < Minitest::Test
 
-  def test_it_can_parse_the_puzzle_text
-    puzzle_text = File.read("./puzzles/easy_sample.txt")
-    solver = Solver.new(puzzle_text)
-  
-    assert_equal [0, 2, 6, 5, 9, 4, 3, 1, 7, 7, 1, 5, 6,
-        3, 8, 9, 4, 2, 3, 9, 4, 7, 2, 1, 8, 6, 5, 1, 6, 3,
-        4, 5, 9, 2, 7, 8, 9, 4, 8, 2, 6, 7, 1, 5, 3, 2, 5,
-        7, 8, 1, 3, 6, 9, 4, 5, 3, 1, 9, 4, 2, 7, 8, 6, 4,
-        8, 2, 1, 7, 6, 5, 3, 9, 6, 7, 9, 3, 8, 5, 4, 2, 1],
-    solver.split_data
-  end
-  
   def test_it_makes_a_board
     puzzle_text = File.read("./puzzles/easy_sample.txt")
     solver = Solver.new(puzzle_text)
-  
-    assert_equal 0, solver.board["a1z"]
-    assert_equal 6, solver.board["c1z"]
-    assert_equal 1, solver.board["i9r"]
+
+    assert solver.board.is_a?(Array)
+    assert solver.board[1].is_a?(Cell)
+    assert_equal 81, solver.board.uniq.length
   end
-  
-  def test_it_can_solve_easy_puzzle
-    puzzle_text = File.read("./puzzles/easy_sample.txt")
-    solver = Solver.new(puzzle_text)
-  
-    solver.solve
-    assert_equal 8, solver.board["a1z"]
-  end
-  
+
   def test_it_can_find_row_peers
     puzzle_text = File.read("./puzzles/easy_sample.txt")
     solver = Solver.new(puzzle_text)
-  
-    assert_equal [6, 5, 9, 4, 3, 1, 7], solver.row_peers("b1z")
+
+    assert solver.row_peers.is_a?(Hash)
+    assert_equal 9, solver.row_peers["1"].length
+    assert_equal "4", solver.row_peers["4"].last.row
   end
-  
+
   def test_it_can_find_square_peers
     puzzle_text = File.read("./puzzles/easy_sample.txt")
     solver = Solver.new(puzzle_text)
-  
-    assert_equal [6, 7, 1, 5, 3, 9, 4], solver.square_peers("b1z")
+
+    assert solver.square_peers.is_a?(Hash)
+    assert_equal 9, solver.square_peers["r"].length
+    assert_equal "z", solver.square_peers["z"].last.square
   end
-  
+
   def test_it_can_find_column_peers
     puzzle_text = File.read("./puzzles/easy_sample.txt")
     solver = Solver.new(puzzle_text)
-  
-    assert_equal [1, 9, 6, 4, 5, 3, 8, 7], solver.column_peers("b1z")
+
+    assert solver.column_peers.is_a?(Hash)
+    assert_equal 9, solver.column_peers["h"].length
+    assert_equal "i", solver.column_peers["i"].last.column
   end
-  
-  def test_it_finds_needed_numbers_for_row
+
+  def test_it_solves_puzzle_with_one_empty
     puzzle_text = File.read("./puzzles/easy_sample.txt")
     solver = Solver.new(puzzle_text)
-  
-    assert_equal [8], solver.needed_numbers_for_group("a")
+
+    refute solver.puzzle_solved?
+    solver.solve
+    assert solver.puzzle_solved?
   end
 
-  def test_it_solves_easy_1
+  def test_it_solves_super_easy_puzzle
     puzzle_text = File.read("./puzzles/solve_new.txt")
     solver = Solver.new(puzzle_text)
-    
-    refute solver.solved?
+
+    refute solver.puzzle_solved?
     solver.solve
-    assert solver.solved?
+    assert solver.puzzle_solved?
   end
 
-  
+  def test_it_solves_less_easy_puzzle
+    puzzle_text = File.read("./puzzles/easy_1.txt")
+    solver = Solver.new(puzzle_text)
 
+    refute solver.puzzle_solved?
+    solver.solve
+    assert solver.puzzle_solved?
+  end
 
-  # validation for solutions --- check row, column, and square
+  def test_it_solves_medium_puzzle
+    skip
+    puzzle_text = File.read("./puzzles/medium.txt")
+    solver = Solver.new(puzzle_text)
+
+    refute solver.puzzle_solved?
+    solver.solve
+    assert solver.puzzle_solved?
+  end
 end
